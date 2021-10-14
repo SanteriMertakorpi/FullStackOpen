@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import axios from "axios"
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persosns'
+import personService from './services/persons'
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
@@ -10,15 +10,17 @@ const App = () => {
   const [newNumber, setNewNumber] = useState('')
   const [showAll, setShowAll] = useState(true)
   const [newFilter, setNewFilter] = useState('')
+  
 
-  const hook = () =>{
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
+  useEffect(() =>{
+    personService
+      .getAll()
+      .then(initialPersons =>{
+        setPersons(initialPersons)
       })
-  }
-  useEffect(hook,[])
+  },[])
+
+  
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -26,14 +28,35 @@ const App = () => {
         name: newName,
         number: newNumber
       }
-    persons.forEach(person =>{
-      if(person.name.includes(newName)){
+    
+    let mapped = persons.map(p => p.name)
+    
+    
+    if(mapped.includes(newName)){
       window.alert(`${newName} is already added to phonebook`)
-    }else{
-      setPersons(persons.concat(nameObject))
       setNewName('')
       setNewNumber('')
-    }}) 
+    }else{
+      personService
+        .create(nameObject)
+        .then(returnedPerson =>{
+          setPersons(persons.concat(returnedPerson))
+          setNewName('')
+          setNewNumber('')
+        })
+      
+      
+    }
+  }
+  const deletePerson =id=>{
+    const person = persons.find(p=>p.id===id)
+    if(window.confirm(`Delete ${person.name} ?`)){
+      personService
+        .remove(id)
+        .then(returnedPersons =>{
+          setPersons(persons.filter(p=>p.id!==id))
+        })
+    }
   }
   const handleNameChange = (event) =>{
     setNewName(event.target.value)
@@ -60,7 +83,7 @@ const App = () => {
         handleFilterChange={handleFilterChange} 
       />
       <h3>add a new </h3>
-
+      
       <PersonForm
         addPerson={addPerson}
         newName={newName}
@@ -72,7 +95,7 @@ const App = () => {
       <h3>Numbers</h3>
 
       {personsToShow.map(person =>
-        <Persons key={person.name} person={person} />
+        <Persons key={person.name} person={person} deletePerson={()=>deletePerson(person.id)}/>
       )}
       
       
