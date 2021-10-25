@@ -1,2 +1,3 @@
 [puhelinluettelo backend koodi](https://github.com/SanteriMertakorpi/osa3)
-Sisältää linkit front- ja backendien verkkosivuille
+* [backend linkki](https://murmuring-castle-54260.herokuapp.com/api/persons)
+* [frontend linkki](https://murmuring-castle-54260.herokuapp.com)
